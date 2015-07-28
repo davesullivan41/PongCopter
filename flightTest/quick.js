@@ -1,9 +1,11 @@
 var arDrone = require('../node/node_modules/ar-drone');
 var cv = require('../node/node_modules/opencv');
-var drive = require('./droneDrive.js');
 
 // create the ardrone client
-var client = arDrone.createClient(framerate=15);
+var client = arDrone.createClient(framerate=15); 
+// currently 640 x 480... which is ridiculously low, and could be explaining our issues
+
+var imgCount = 0;
 
 // hsv color window
 var lower_hsv = [10, 150, 150]
@@ -16,20 +18,22 @@ function updateDroneAction(coords)
     console.log("I DONT SEE IT")
     client.stop();
   }
-  else if(coords[0][0] > 370)
+  else if(coords[0][0] > 330)
   {
     console.log("I see the ball to the right")
+    //client.right(0.5*(coords[0][0]-320.0)/320.0);
     client.right(0.2);
-        client.after(50,function(){
-       this.stop()
+        client.after(45,function(){
+        client.left(0.2);
       });
   }
-  else if(coords[0][0] < 350)
+  else if(coords[0][0] < 310)
   {
     console.log("I see the ball to the left")
     client.left(0.2);
-        client.after(50,function(){
-       this.stop();
+    //client.left(0.5*coords[0][0]/320.0);
+        client.after(45,function(){
+       client.right(0.2);
       });
   }
   else
@@ -44,38 +48,44 @@ var pngStream = client.getPngStream();
 
 // image stream event handler
 pngStream.on('data', function(image){
+  var start = new Date().getTime();
   // pass the image to opencv
   cv.readImage(image, function(err, im){
     if(!err){
       // optionally save the raw images
-      //im.save('log/raw' + imageIndex + '.jpeg');
+      //im.save('log/raw' + imgCount + '.jpeg');
 
       // convert to hsv and filter out the ball
       im.convertHSVscale();
       im.inRange(lower_hsv, upper_hsv);
-
-      // optionally save the current image
-      im.save('curr.jpeg');
+      im.dilate(3);
+      
 
       // find the contours
       contours = im.findContours();
       
       // store up to the first 5 coordinates in an array
-      coordinates = new Array();
+      coordinates = new Array(5);
       for(var i=0;i<5;i++)
       {
         if(i >= contours.size())
         {
-          coordinates.push([-1,-1]);
+          coordinates[i] = [-1,-1,-1];
         }
         else
         {
-          coordinates.push([contours.boundingRect(i).x,contours.boundingRect(i).y]);
+          coordinates[i] = [contours.boundingRect(i).x,contours.boundingRect(i).y,contours.area(i)];
         }
       }
-
+      var end = new Date().getTime();
+      console.log(end - start);
       // pass the array and the drone controller to a separate function
       updateDroneAction(coordinates);
+
+      // optionally save the current image
+      
+      im.save('log/proc' + imgCount + '.jpeg');
+      imgCount = imgCount + 1;
     }
   })
 });

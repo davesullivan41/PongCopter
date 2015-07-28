@@ -1,5 +1,30 @@
 var cv = require('../node/node_modules/opencv/lib/opencv');
 
+
+
+// hsv color window
+var lower_hsv = [10, 150, 150];
+var upper_hsv = [25, 255, 255];
+
+var start = new Date().getTime();
+
+cv.readImage('raw33.jpeg', function(err,im){
+	if(err) throw err;
+
+	im.convertHSVscale();
+	im.inRange(lower_hsv, upper_hsv);
+	// find the contours
+	contours = im.findContours();
+	var out = new cv.Matrix(im.height(), im.width());
+	out.drawContour(contours,0,[255,255,255]);
+	out.drawContour(contours,1,[255,255,255]);
+	// optionally save the current image
+	im.save('curr.jpeg');
+	out.save('out.jpeg');
+
+});
+
+/*
 // (B)lue, (G)reen, (R)ed
 // 250, 120, 195
 var lower_threshold = [30, 130, 190];
@@ -38,3 +63,4 @@ for(j = 1 ; j < 221 ; j++){
 	  out.save('./out/hsv' + j.toString() + '.jpeg');
 	});
 }
+*/
