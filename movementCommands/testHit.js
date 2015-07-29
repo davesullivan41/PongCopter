@@ -7,8 +7,8 @@ var client = arDrone.createClient(framerate=15);
 function performFlick()//can I define this to be called on client?
 {
 
-	client.forward(0.2)
-	client.back(0.2)
+	client.front(1.0)
+	client.back(1.0)
 }
 
 
