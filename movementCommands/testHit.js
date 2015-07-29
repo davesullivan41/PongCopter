@@ -15,9 +15,13 @@ function performFlick()//can I define this to be called on client?
 // take off and fly for 20 seconds
 client.takeoff();
 client
-  .after(8000, function(){
-  	this.forward(.1)
-  	this.backward(.1)
+  .after(5000, function(){
+  	this.front(1.0)
+  })
+  .after(1000, function(){
+  	this.back(1.0);
+  })
+  .after(1000, function(){
     this.land()
     this.stop()
   });
