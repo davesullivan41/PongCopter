@@ -2,11 +2,11 @@ var arDrone = require('../node/node_modules/ar-drone');
 var cv = require('../node/node_modules/opencv');
 
 // create the ardrone client
-var client = arDrone.createClient();//framerate=15); 
+var client = arDrone.createUdpControl();//framerate=15); 
 // currently 640 x 360... which is ridiculously low, and could be explaining our issues
 
 var PaVEParser = require('../node/node_modules/ar-drone/lib/video/PaVEParser');
-var stream = new cv.ImageDataStream();
+//var stream = new cv.ImageDataStream();
 
 var imgCount = 0;
 
@@ -15,22 +15,22 @@ var imgCount = 0;
 var video = client.getVideoStream();
 var parser = new PaVEParser();
 
+/*
 stream.on('frame', function(matrix){
   console.log('frame');
   console.log(matrix.length);
-  cv.readImage(matrix, function(err, im){
+
+});*/
+
+parser
+  .on('data', function(data) {
+   cv.readImage(matrix, function(err, im){
     if(!err){
+      console.log("saving image");
       im.save('log/tcp' + imgCount + '.jpeg');
       imgCount = imgCount + 1;
     }
   })
-});
-
-parser
-  .on('data', function(data) {
-    stream.emit('frame',data.payload);
-    //console.log(data.payload);
-    //stream.write(data.payload);
   })
   .on('end', function() {
     console.log('end');

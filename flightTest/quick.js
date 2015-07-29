@@ -2,7 +2,7 @@ var arDrone = require('../node/node_modules/ar-drone');
 var cv = require('../node/node_modules/opencv');
 
 // create the ardrone client
-var client = arDrone.createClient(framerate=15); 
+var client = arDrone.createClient(framerate=5); 
 // currently 640 x 480... which is ridiculously low, and could be explaining our issues
 
 var imgCount = 0;
@@ -48,7 +48,7 @@ var pngStream = client.getPngStream();
 
 // image stream event handler
 pngStream.on('data', function(image){
-  var start = new Date().getTime();
+  //var start = new Date().getTime();
   // pass the image to opencv
   cv.readImage(image, function(err, im){
     if(!err){
@@ -77,8 +77,8 @@ pngStream.on('data', function(image){
           coordinates[i] = [contours.boundingRect(i).x,contours.boundingRect(i).y,contours.area(i)];
         }
       }
-      var end = new Date().getTime();
-      console.log(end - start);
+      //var end = new Date().getTime();
+      //console.log(end - start);
       // pass the array and the drone controller to a separate function
       updateDroneAction(coordinates);
 
@@ -93,7 +93,7 @@ pngStream.on('data', function(image){
 // take off and fly for 2 minutes
 client.takeoff();
 client
-  .after(1200000, function(){
+  .after(20000, function(){
     this.land()
     this.stop()
   });
