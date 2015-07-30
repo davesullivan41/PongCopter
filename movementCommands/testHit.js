@@ -1,27 +1,45 @@
 var arDrone = require('../node/node_modules/ar-drone');
+var control = arDrone.createUdpControl();
 
 // create the ardrone client
 var client = arDrone.createClient(framerate=15); 
 // currently 640 x 480... which is ridiculously low, and could be explaining our issues
 
-function performFlick()//can I define this to be called on client?
-{
+var ref  = {};
+var pcmd1 = {};
+ref.emergency = true;
 
-	client.front(1.0)
-	client.back(1.0)
+function performFlick()//can I define this to be called on client?
+{ 
+  udpControl.raw('REF', (1 << 9));
 }
 
 
+setTimeout(function() {
+  console.log('Takeoff ...');
+
+  ref.emergency = false;
+  ref.fly       = true;
+  control.ref(ref);
+  control.flush();
+}, 10);
+
 // take off and fly for 20 seconds
-client.takeoff();
+//client.takeoff();
 client
-  .after(5000, function(){
-  	this.front(1.0)
+  .after(4000, function(){
+    control.ref(ref);
+    control.pcmd({front:1.0});
+    control.flush();
+
   })
-  .after(1000, function(){
-  	this.back(1.0);
+  .after(500, function(){
+    control.ref(ref);
+  	control.pcmd({front:-1.0});
+    control.flush();
+
   })
-  .after(1000, function(){
+  .after(2000, function(){
     this.land()
     this.stop()
   });
