@@ -25,8 +25,10 @@ and 0 being: move directly forward at SPEED speed
 
 forward - boolean true if desired direction is angled forward, false if backward
 */
-function move(direction, forward)//direction ranges from -1 to 1 negative is left positive is right
+function move(delay, duration, direction, forward)//direction ranges from -1 to 1 negative is left positive is right
 {
+  setTimeout(function()
+  {
   //console.log("moving to " + direction)
   direction *= -1
   direction += 1
@@ -44,6 +46,10 @@ function move(direction, forward)//direction ranges from -1 to 1 negative is lef
 
   pcmd.right = sideSpeed * SPEED;
   pcmd.front = frontSpeed * SPEED;
+  }, delay)
+  setTimeout(function() {
+    pcmd = {}
+  }, delay + duration)
 
 }
 
@@ -86,6 +92,21 @@ function moveInASquare()
   }, startDelay);
 }
 
+
+// client.on('navdata', function(contents) {
+//   logAltitude(contents)
+// })
+
+/*
+logs altitude
+*/
+function logAltitude(contents)
+{
+  data = JSON.parse(contents)
+  console.log(data.demo.altitude)
+  //var stuff = contents[0]
+}
+
 /* FUNCTION rotateRise
 
 This function will hopefully make the drone rotate and rise at the same time will hovering as best as possible over
@@ -97,12 +118,25 @@ function rotateRiseAuto(delay)
   client.clockwise(0.5)
 }
 
-function rotateRise(delay)
+function droneUp(delay, duration)
 {
   setTimeout(function() {
     pcmd.up = 0.3
-    pcmd.clockwise= 1.0
   }, delay)
+  setTimeout(function() {
+    pcmd = {}
+  }, delay + duration)
+  
+}
+
+function droneDown(delay, duration)
+{
+  setTimeout(function() {
+    pcmd.up = -0.3
+  }, delay)
+  setTimeout(function() {
+    pcmd = {}
+  }, delay + duration)
   
 }
 
@@ -166,16 +200,30 @@ function landAuto(delay)
 var SPEED = 0.3
 
 var totalTime = 0;
+
 // flyAuto()
 fly()
 var flyDuration = 5000
 totalTime += flyDuration
+
+var moveFrontDuration = 2000
+move(totalTime,moveFrontDuration,0,1)
+
 rotate90degress(totalTime, "left")
 var rotateDuration = 3000
 totalTime += rotateDuration
+
+var riseDuration = 2000
+droneUp(totalTime, riseDuration)
+totalTime += riseDuration
+
+var downDuration = 2000
+droneDown(totalTime, downDuration)
+totalTime += downDuration
+
 rotate90degress(totalTime, "right")
-rotateDuration = 3000
 totalTime += rotateDuration
+
 // landAuto(totalTime)
 land(totalTime)
 
@@ -185,3 +233,5 @@ setInterval(function() {
   control.pcmd(pcmd);
   control.flush();
 }, 30);
+
+
